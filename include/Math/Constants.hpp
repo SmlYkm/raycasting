@@ -6,4 +6,4 @@
 #define HALF_PI 0.5f * M_PI
 #define THREE_HALVES_PI 1.5f * M_PI
 
-#define FLOAT_EPSILON 0.0001f
+#define FLOAT_EPSILON 0.0001f    // Used to avoid floating point errors

@@ -64,33 +64,28 @@ namespace Rendering
         ball.setFillColor(sf::Color::Red);
         ball.setPosition(gridToWindow(player->getPosition()));
         window.draw(ball);
-
-        //std::cout << "Player position: " << player->getPosition().getX() << ", " << player->getPosition().getY() << std::endl;
     }
 
     void Renderer::castRaysTopView()
     {
-        // Conversions from personalized vector class to sfml 
-        // vector class are made so sfml functions can be used
+        // Conversion from math vector class to sfml 
         sf::Vector2f playerPos = gridToWindow(player->getPosition());
         player->normalizeAngle();
         Math::Angle ang = player->getAngle();
 
-        ang -= FOV / 2.0f;
+        ang -= fov / 2.0f;
 
-        for(int i = 0; i < N_RAYS; ++i)
+        for(int i = 0; i < nRays; ++i)
         {
             ang.normalize();
 
             Math::Vector2f snappedPoint = Raycaster::castedRayHitPoint(player->getPosition(), ang, map);
             sf::Vector2f snappedPointSFML = gridToWindow(snappedPoint);
 
-            //std::cout << "Snapped point: " << snappedPoint.getX() << ", " << snappedPoint.getY() << std::endl;
-
             // Draw line from player to hit point
             drawLine(playerPos, snappedPointSFML, sf::Color::Black);
         
-            ang += FOV / (N_RAYS - 1);
+            ang += fov / (nRays - 1);
         }
     }
 
@@ -98,7 +93,7 @@ namespace Rendering
     void Renderer::drawPixelColumn(int x, float dist/*, sf::Color color*/)
     {
         float height = screenHeight / dist;
-        sf::RectangleShape rect(sf::Vector2f(screenWidth/N_RAYS, height));
+        sf::RectangleShape rect(sf::Vector2f(screenWidth/nRays, height));
         rect.setFillColor(sf::Color(0, 255, 0, (dist > 1.0f) ? 255 / dist : 255));
         rect.setPosition(sf::Vector2f(x, (screenHeight - height) / 2));
         window.draw(rect);
@@ -107,22 +102,22 @@ namespace Rendering
     // Draws columns of pixels taking into account the distance of the wall
     void Renderer::render3d()
     {
-        // Conversions from personalized vector class to sfml 
-        // vector class are made so sfml functions can be used
+        // Conversions from math vector class to sfml 
         sf::Vector2f playerPos = gridToWindow(player->getPosition());
         player->normalizeAngle();
         Math::Angle ang = player->getAngle();
 
-        ang -= FOV / 2.0f;
+        ang -= fov / 2.0f;
 
-        for(int i = 0; i < N_RAYS; ++i)
+        for(int i = 0; i < nRays; ++i)
         {
             ang.normalize();
 
-            drawPixelColumn(i * screenWidth / N_RAYS, Raycaster::castedRayDist(player->getPosition(), ang, map));
+            //float dist = Raycaster::castedRayDist(player->getPosition(), ang, map) * cos((player->getAngle() - ang).get());
+            drawPixelColumn(i * screenWidth / nRays, Raycaster::castedRayDist(player->getPosition(), ang, map));
         
-            ang += FOV / (N_RAYS - 1);
-        }
+            ang += fov / (nRays - 1);
+        } 
     }
 
     Renderer& Renderer::getInstance()
@@ -131,26 +126,30 @@ namespace Rendering
         return instance;
     }
 
-    void Renderer::init(Game::Map* mp, Game::Player* pl, int width, int height, const char* title)
+    void Renderer::init(Game::Map* mp, Game::Player* pl, int width, int height, const char* title, float fieldOfView, int raysN)
     {
         map = mp;
         player = pl;
         screenWidth = width;
         screenHeight = height;
+        fov = fieldOfView;
+        nRays = raysN;
 
         window.create(sf::VideoMode(screenWidth, screenHeight), title);
-        window.setFramerateLimit(60);    // TODO: change this to a variable
+        window.setFramerateLimit(60);
     }
 
     void Renderer::render()
     {
         window.clear();
 
-        render3d();
+        /* 3D CODE */
+        // render3d();
         
-        // renderTopView();
-        // castRaysTopView();
-        // renderPlayerBall();
+        /* TOPVIEW CODE */
+        renderTopView();
+        castRaysTopView();
+        renderPlayerBall();
 
         window.display();
     }
@@ -168,5 +167,10 @@ namespace Rendering
     bool Renderer::isOpen() const
     {
         return window.isOpen();
+    }
+
+    void Renderer::setFPSlimit(unsigned int fps)
+    {
+        window.setFramerateLimit(fps);
     }
 }

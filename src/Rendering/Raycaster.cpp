@@ -3,22 +3,21 @@
 
 namespace Rendering
 {
-    // TODO: make it iterative
-    Math::Vector2f Raycaster::prolongRay(Math::Vector2f currentPos, Math::Vector2f& delta, Game::Map* map)    
+    // Prolongs ray till it hits a wall or goes outside of the map
+    Math::Vector2f Raycaster::prolongRay(Math::Vector2f currentPos, Math::Vector2f delta, Game::Map* map)    
     {
-        // If the current position isn't a wall or is outside of the boudaries of the map
-        // (isWall also checks boudaries), return the previous position,
-        // which is the hit position of the ray
-        if(!map->positionIsValid((int)currentPos.getX(), (int)currentPos.getY()) 
-           || map->isWall((int)currentPos.getX(), (int)currentPos.getY()))
-            return currentPos;
-        return prolongRay(currentPos + delta, delta, map);
+        // If the current position isn't a wall and isn't outside of the boudaries of the map
+        while(map->positionIsValid((int)currentPos.getX(), (int)currentPos.getY()) 
+           && !map->isWall((int)currentPos.getX(), (int)currentPos.getY()))
+            currentPos += delta;
+        return currentPos;
     }
 
     Math::Vector2f Raycaster::castHorizontally(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
+        // Variables used to calculate the first iteration of the algorithm
         float x = floor(castingPos.getX()), y;
-        float deltaY, deltaX;
+        float deltaY, deltaX;    // Increment values
         float angularCoef = tan(angle.get());
 
         if(angle.lookingRight())
@@ -32,18 +31,19 @@ namespace Rendering
             deltaX = -1.0f;
         }
 
+        // Line equation used to find the y position in the first iteration
         y = (x - castingPos.getX())*angularCoef + castingPos.getY();
         deltaY = deltaX * angularCoef;
 
-        Math::Vector2f delta(deltaX, deltaY);
-        return prolongRay(Math::Vector2f(x, y), delta, map);
+        return prolongRay(Math::Vector2f(x, y), Math::Vector2f(deltaX, deltaY), map);
     }
 
     Math::Vector2f Raycaster::castVertically(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
+        // Variables used to calculate the first iteration of the algorithm
         float y = floor(castingPos.getY()), x;
         float angularCoef = tan(angle.get());
-        float deltaY, deltaX;
+        float deltaY, deltaX;    // Increment values
 
         if(angle.lookingUp())
         {
@@ -56,11 +56,12 @@ namespace Rendering
             deltaY = -1.0f;
         }
 
-        x = (y - castingPos.getY()) / angularCoef + castingPos.getX();    // Line equation used to find the x position
+        // Line equation used to find the x position in the first iteration
+        x = (y - castingPos.getY()) / angularCoef + castingPos.getX();
         deltaX = deltaY / angularCoef;
 
-        Math::Vector2f delta(deltaX, deltaY);
-        return prolongRay(Math::Vector2f(x, y), delta, map);
+        // Increments x and y values by the delta values till the ray hits a wall
+        return prolongRay(Math::Vector2f(x, y), Math::Vector2f(deltaX, deltaY), map);
     }
 
     float Raycaster::castedRayDist(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
@@ -71,6 +72,7 @@ namespace Rendering
         float verticalDist = verticalHit.lengthSquared();
         float horizontalDist = horizontalHit.lengthSquared();
 
+        // Returns the smallest distance, which is the actual distance to the wall
         float dist = (verticalDist < horizontalDist) ? verticalDist : horizontalDist;
 
         return sqrt(dist);
@@ -81,9 +83,11 @@ namespace Rendering
         Math::Vector2f verticalHit = castVertically(castingPos, angle, map) - castingPos;
         Math::Vector2f horizontalHit = castHorizontally(castingPos, angle, map) - castingPos;
 
+        // Returns the smallest vector, which is the one that is snapped to the wall
         return (verticalHit.lengthSquared() < horizontalHit.lengthSquared()) ? verticalHit : horizontalHit;
     }
 
+    // Returns the coordinates of the hit point of the ray (NOT the vector from the player position to the hit point)
     Math::Vector2f Raycaster::castedRayHitPoint(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         return castRay(castingPos, angle, map) + castingPos;

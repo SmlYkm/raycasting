@@ -3,6 +3,8 @@
 #include "Math/Vector2f.hpp"
 #include "Math/Angle.hpp"
 
+#include "Game/Map.hpp"
+
 namespace Game
 {
     class Player
@@ -14,9 +16,12 @@ namespace Game
         // Player has no acceleration
         float velocity;
         float angularVelocity;
+
+        Game::Map* map;
     
     public:
-        Player(Math::Vector2f pos = Math::Vector2f(0.0f, 0.0f), 
+        Player(Math::Vector2f pos = Math::Vector2f(0.0f, 0.0f),
+               Game::Map* mp = nullptr, 
                float ang = 0.0f, 
                float vel = 0.0f, 
                float angVel = 0.0f);

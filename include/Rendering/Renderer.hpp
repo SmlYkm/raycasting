@@ -9,12 +9,10 @@
 // Used to render topview
 #define CELL_SEPARATOR_THICKNESS 1    // Thickness of the grid separator lines
 
-#define FOV M_PI / 3.0f    // Field of view in radians
-#define N_RAYS 100    // Number of rays casted from the player
-
-//Singleton
 namespace Rendering
 {
+    // Singleton class.
+    // As defaut, the FPS is limited to 60 in the init function.
     class Renderer
     {
     private:
@@ -30,6 +28,9 @@ namespace Rendering
         // using a Math::Vector2f is not necessary.
         int screenWidth;
         int screenHeight;
+
+        float fov;    // Field of view in radians
+        int nRays;    // Number of rays casted from the player
     
     private:
         Renderer();
@@ -45,7 +46,7 @@ namespace Rendering
         sf::Vector2f mathToSFML(const Math::Vector2f& vec) const;
         sf::Vector2f gridToWindow(const Math::Vector2f& vec) const;
         void drawLine(sf::Vector2f initialPos, sf::Vector2f endingPos, sf::Color color);
-        void renderTopView();
+        void renderTopView();    // Renders map in top view
         void renderPlayerBall();    // Draws a ball in the player's position
         void castRaysTopView();    // Draws rays from the player's position
         
@@ -55,9 +56,12 @@ namespace Rendering
 
     public:
         static Renderer& getInstance();
-        void init(Game::Map* mp, Game::Player* pl, int width, int height, const char* title);
+        void init(Game::Map* mp, Game::Player* pl, 
+                  int width, int height, const char* title = " ", 
+                  float fieldOfView = M_PI / 2.0f, int raysN = 100);
         void render();
         void pollEvent();
         bool isOpen() const;
+        void setFPSlimit(unsigned int fps);
     };
 }

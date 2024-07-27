@@ -2,6 +2,7 @@
 
 #include "Math/Vector2f.hpp"
 #include "Math/Angle.hpp"
+#include "Game/Map.hpp"
 
 #include <SFML/System/Clock.hpp>
 
@@ -16,7 +17,7 @@ namespace Math
     public:
         Physics() = delete;    // Prevents instantiation
 
-        static void updatePosition(Math::Vector2f& position, float velocity, Angle angle);
+        static void updatePosition(Math::Vector2f& position, float velocity, Math::Angle angle, Game::Map* map);
         static void updateAngle(Angle& angle, float angularVelocity);
     
         static void updateDeltaTime();
