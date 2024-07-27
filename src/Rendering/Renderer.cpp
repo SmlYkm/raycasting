@@ -144,12 +144,12 @@ namespace Rendering
         window.clear();
 
         /* 3D CODE */
-        // render3d();
+        render3d();
         
         /* TOPVIEW CODE */
-        renderTopView();
-        castRaysTopView();
-        renderPlayerBall();
+        // renderTopView();
+        // castRaysTopView();
+        // renderPlayerBall();
 
         window.display();
     }

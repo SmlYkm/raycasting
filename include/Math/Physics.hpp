@@ -17,7 +17,9 @@ namespace Math
     public:
         Physics() = delete;    // Prevents instantiation
 
-        static void updatePosition(Math::Vector2f& position, float velocity, Math::Angle angle, Game::Map* map);
+        static void wallCollisionHandling(Math::Vector2f& position, Game::Map* map, float radius);
+
+        static void updatePosition(Math::Vector2f& position, float velocity, Math::Angle angle, Game::Map* map, float rad = 0.0f);
         static void updateAngle(Angle& angle, float angularVelocity);
     
         static void updateDeltaTime();

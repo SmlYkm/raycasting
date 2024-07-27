@@ -5,8 +5,8 @@
 
 namespace Game
 {
-    Player::Player(Math::Vector2f pos, Game::Map* mp, float ang, float vel, float angVel)
-        : position(pos), map(mp), angle(ang), velocity(vel), angularVelocity(angVel)
+    Player::Player(Math::Vector2f pos, Game::Map* mp, float rad, float ang, float vel, float angVel)
+        : position(pos), map(mp), radius(rad), angle(ang), velocity(vel), angularVelocity(angVel)
     {}
 
     Player::~Player()
@@ -43,10 +43,10 @@ namespace Game
         // Since more than one key can be pressed at the same time,
         // we need to check each key separately
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-            Math::Physics::updatePosition(position, velocity, angle, map);
+            Math::Physics::updatePosition(position, velocity, angle, map, radius);
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            Math::Physics::updatePosition(position, -velocity, angle, map);
+            Math::Physics::updatePosition(position, -velocity, angle, map, radius);
 
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             Math::Physics::updateAngle(angle, -angularVelocity);

@@ -13,6 +13,8 @@ namespace Rendering
         return currentPos;
     }
 
+    // Casts the ray snapping it horizontally(the name might be inverted)
+    // to the next grid till it hits a wall and returns the position of the hit,
     Math::Vector2f Raycaster::castHorizontally(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         // Variables used to calculate the first iteration of the algorithm
@@ -38,6 +40,8 @@ namespace Rendering
         return prolongRay(Math::Vector2f(x, y), Math::Vector2f(deltaX, deltaY), map);
     }
 
+    // Casts the ray snapping it vertically(the name might be inverted)
+    // to the next grid till it hits a wall and returns the position of the hit,
     Math::Vector2f Raycaster::castVertically(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         // Variables used to calculate the first iteration of the algorithm
@@ -64,6 +68,7 @@ namespace Rendering
         return prolongRay(Math::Vector2f(x, y), Math::Vector2f(deltaX, deltaY), map);
     }
 
+    // Returns distance from the casting position to the wall
     float Raycaster::castedRayDist(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         Math::Vector2f verticalHit = castVertically(castingPos, angle, map) - castingPos;
@@ -78,6 +83,7 @@ namespace Rendering
         return sqrt(dist);
     }
 
+    // Casts the ray and returns the vector from the player position to the hit point
     Math::Vector2f Raycaster::castRay(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         Math::Vector2f verticalHit = castVertically(castingPos, angle, map) - castingPos;

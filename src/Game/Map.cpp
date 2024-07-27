@@ -7,6 +7,7 @@
 
 namespace Game
 {
+    // Deallocates the map matrix
     void Map::destroyTiles()
     {
         if(tiles)    // Deallocates allocated memory for the matrix
@@ -21,7 +22,8 @@ namespace Game
         }
     }
 
-    void Map::load(const char* filePath)    // Loads map from a JSON file
+    // Loads map from a JSON file, deleting the previous map if it exists
+    void Map::load(const char* filePath)
     {
         destroyTiles();
 
@@ -54,7 +56,8 @@ namespace Game
         // File is automatically closed when the ifstream object is destroyed
     }
 
-    Map::Map(const char* filePath)    // Loads map from a JSON file
+    // Constructor that loads the map from a JSON file
+    Map::Map(const char* filePath)
         : height(0), width(0), tiles(nullptr)
     {
         load(filePath);
@@ -79,6 +82,7 @@ namespace Game
         return width; 
     }
 
+    // Checks if the position is within the boundaries of the map
     bool Map::positionIsValid(int x, int y) const 
     {
         return x >= 0 && x < width && y >= 0 && y < height && tiles; 
@@ -91,9 +95,12 @@ namespace Game
         return ' ';
     }
 
-    // Funtion doesn't check possible buffer overflows
+    // Checks if the position is a wall, if the position is outside the
+    // boundaries of the map, it is considered a wall
     bool Map::isWall(int x, int y) const 
     {
-        return (tiles[y][x] == '#');
+        if(positionIsValid(x, y))
+            return tiles[y][x] == '#';
+        return true;    // If the position is invalid, consider it a wall
     }
 }
