@@ -53,6 +53,7 @@ namespace Rendering
     // Raycasting methods
         void drawPixelColumn(int x, float dist/*, sf::Color color*/);
         void render3d();    // Renders the 3D view
+        void render3dCameraPlane();
 
     public:
         static Renderer& getInstance();

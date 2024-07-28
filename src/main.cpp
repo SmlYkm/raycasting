@@ -2,7 +2,7 @@
 #include "Rendering/Renderer.hpp"
 #include "Math/Physics.hpp"
 
-#define MAP_PATH "../levels/level2.json"
+#define MAP_PATH "../levels/level1.json"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600

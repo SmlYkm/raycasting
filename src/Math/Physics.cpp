@@ -10,40 +10,40 @@ namespace Math
     sf::Clock Physics::clock;    // Definition of the static variable
 
     // Handles wall collisions
-    void Physics::wallCollisionHandling(Math::Vector2f& position, Game::Map* map, float radius)
+    bool Physics::checkCollision(float x, float y, Game::Map* map, float radius)
     {
-        if(map->isWall((int)(position.getX() + radius), (int)position.getY()))    // New x position is not valid
-            position.setX(ceil(position.getX()) - radius);
-
-        else if(map->isWall((int)(position.getX() - radius), (int)position.getY()))    // New x position is not valid
-            position.setX(floor(position.getX()) + radius);
-
-        if(map->isWall((int)position.getX(), (int)(position.getY() + radius)))    // New y position is not valid
-            position.setY(ceil(position.getY()) - radius);
-
-        else if(map->isWall((int)position.getX(), (int)(position.getY() - radius)))    // New y position is not valid
-            position.setY(floor(position.getY()) + radius);
+        // isWall also checks boudaries, so buffer overflows don't occur
+        return ((map->isWall((int)(x + radius), (int)(y + radius))) ||
+                (map->isWall((int)(x - radius), (int)(y + radius))) ||
+                (map->isWall((int)(x + radius), (int)(y - radius))) ||
+                (map->isWall((int)(x - radius), (int)(y - radius))));
     }
 
     // Updates the player position and checks for wall collisions
     void Physics::updatePosition(Math::Vector2f& position, float velocity, Angle angle, Game::Map* map, float radius)
     {
-        Math::Vector2f lastPosition = position;
+        float yPos = std::sin(angle.get()) * velocity * deltaTime + position.getY();
+        float xPos = std::cos(angle.get()) * velocity * deltaTime + position.getX();
 
-        position += Math::Vector2f( std::cos(angle.get()), std::sin(angle.get()) ) * velocity * deltaTime;
-
-        // Checks if the new position is within the boundaries of the map
-        if(!map->positionIsValid((int)position.getX(), (int)position.getY()))
-        {
-            position = lastPosition;
-            return;
-        }
-
-        wallCollisionHandling(position, map, radius);
+        if(!checkCollision(xPos, position.getY(), map, radius))    // If position is valid
+            position.setX(xPos);
+        // If not, place it in the last valid position
+        else if(xPos > position.getX())    // If the player is moving right
+            position.setX(ceil(position.getX()) - radius - FLOAT_EPSILON);
+        else
+            position.setX(floor(position.getX()) + radius + FLOAT_EPSILON);
+        
+        if(!checkCollision(position.getX(), yPos, map, radius))    // If position is valid
+            position.setY(yPos);
+        // If not, place it in the last valid position
+        else if(yPos > position.getY())    // If the player is moving down
+            position.setY(ceil(position.getY()) - radius - FLOAT_EPSILON);
+        else
+            position.setY(floor(position.getY()) + radius + FLOAT_EPSILON);
     }
 
     // Updates the player view angle
-    void Physics::updateAngle(Angle& angle, float angularVelocity)
+    void Physics::updateAngle(Angle& angle, float angularVelocity) 
     {
         angle += angularVelocity * deltaTime;
     }

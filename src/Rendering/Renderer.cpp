@@ -92,7 +92,7 @@ namespace Rendering
     // Draws a column of pixels
     void Renderer::drawPixelColumn(int x, float dist/*, sf::Color color*/)
     {
-        float height = screenHeight / dist;
+        float height = ((float)screenHeight) / dist;
         sf::RectangleShape rect(sf::Vector2f(screenWidth/nRays, height));
         rect.setFillColor(sf::Color(0, 255, 0, (dist > 1.0f) ? 255 / dist : 255));
         rect.setPosition(sf::Vector2f(x, (screenHeight - height) / 2));
@@ -108,15 +108,14 @@ namespace Rendering
         Math::Angle ang = player->getAngle();
 
         ang -= fov / 2.0f;
-
-        for(int i = 0; i < nRays; ++i)
+        float increment = fov / (nRays - 1);
+        
+        for(int i = 0; i < nRays; ++i, ang += increment)
         {
             ang.normalize();
 
-            //float dist = Raycaster::castedRayDist(player->getPosition(), ang, map) * cos((player->getAngle() - ang).get());
-            drawPixelColumn(i * screenWidth / nRays, Raycaster::castedRayDist(player->getPosition(), ang, map));
-        
-            ang += fov / (nRays - 1);
+            float distance = Raycaster::castedRayDist(player->getPosition(), ang, map);            
+            drawPixelColumn(i * screenWidth / nRays, distance);
         } 
     }
 

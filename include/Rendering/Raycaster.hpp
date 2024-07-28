@@ -15,9 +15,9 @@ namespace Rendering
         static Math::Vector2f castVertically(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);
  
         static Math::Vector2f snapRayToWall(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);    // Prolongs ray to the next grid (fist iteration of the algorithm)
-        static Math::Vector2f castRay(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);
 
     public:
+        static Math::Vector2f castedRayVec(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);
         static float castedRayDist(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);
         static Math::Vector2f castedRayHitPoint(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map);
     };

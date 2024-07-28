@@ -84,7 +84,7 @@ namespace Rendering
     }
 
     // Casts the ray and returns the vector from the player position to the hit point
-    Math::Vector2f Raycaster::castRay(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
+    Math::Vector2f Raycaster::castedRayVec(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
         Math::Vector2f verticalHit = castVertically(castingPos, angle, map) - castingPos;
         Math::Vector2f horizontalHit = castHorizontally(castingPos, angle, map) - castingPos;
@@ -96,6 +96,6 @@ namespace Rendering
     // Returns the coordinates of the hit point of the ray (NOT the vector from the player position to the hit point)
     Math::Vector2f Raycaster::castedRayHitPoint(Math::Vector2f castingPos, Math::Angle angle, Game::Map* map)
     {
-        return castRay(castingPos, angle, map) + castingPos;
+        return castedRayVec(castingPos, angle, map) + castingPos;
     }
 }
