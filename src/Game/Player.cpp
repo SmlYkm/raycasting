@@ -1,33 +1,39 @@
 #include "Game/Player.hpp"
 #include "Math/Physics.hpp"
+#include "Math/Constants.hpp"
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 namespace Game
 {
-    Player::Player(Math::Vector2f pos, Game::Map* mp, float rad, float ang, float vel, float angVel)
+    Player::Player(Math::Vector2D<float> pos, Game::Map* mp, float rad, float ang, float vel, float angVel)
         : position(pos), map(mp), radius(rad), angle(ang), velocity(vel), angularVelocity(angVel)
     {}
 
     Player::~Player()
     {}
 
-    const Math::Vector2f& Player::getPosition() const
+    const Math::Vector2D<float>& Player::getPosition() const
     {
         return position;
     }
 
-    void Player::setPosition(const Math::Vector2f& pos)
+    void Player::setPosition(const Math::Vector2D<float>& pos)
     {
         position = pos;
     }
 
     void Player::normalizeAngle()
     {
-        angle.normalize();
+        while(angle < 0.0f)
+            angle += TWO_PI;
+        while(angle >= TWO_PI)
+            angle -= TWO_PI;
     }
 
-    Math::Angle Player::getAngle() const
+
+    const float Player::getAngle() const
     {
         return angle;
     }

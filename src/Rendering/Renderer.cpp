@@ -6,95 +6,19 @@
 namespace Rendering
 {
     Renderer::Renderer()
-        : map(nullptr), screenWidth(0), screenHeight(0)
+        : map(nullptr), screenWidth(0), screenHeight(0), fov(0.0f), nRays(0), cameraPlaneLen(0.0f)
     {}
 
     Renderer::~Renderer()
     {}
 
-    sf::Vector2f Renderer::mathToSFML(const Math::Vector2f& vec) const
-    {
-        return sf::Vector2f(vec.getX(), vec.getY());    // Convert Math::Vector2f to sf::Vector2f
-    }
-
-    sf::Vector2f Renderer::gridToWindow(const Math::Vector2f& vec) const
-    {
-        static int cellWidth = screenWidth / map->getWidth();
-        static int cellHeight = screenHeight / map->getHeight();
-        return sf::Vector2f(vec.getX() * cellWidth, vec.getY() * cellHeight);    // Convert Math::Vector2f to sf::Vector2f
-    }
-
-    void Renderer::drawLine(sf::Vector2f initialPos, sf::Vector2f endingPos, sf::Color color)
-    {
-        sf::VertexArray line(sf::Lines, 2);
-
-        line[0].position = initialPos;
-        line[0].color = color; // Start point color
-        line[1].position = endingPos;
-        line[1].color = color; // End point color
-
-        window.draw(line);
-    }
-
-    void Renderer::renderTopView()
-    {
-        // Render map grid
-        int cellWidth = screenWidth / map->getWidth();
-        int cellHeight = screenHeight / map->getHeight();
-
-        for(int i = 0; i < map->getHeight(); i++)
-        {
-            for(int j = 0; j < map->getWidth(); j++)
-            {
-                sf::RectangleShape rect(sf::Vector2f(cellWidth - CELL_SEPARATOR_THICKNESS, cellHeight - CELL_SEPARATOR_THICKNESS));
-                rect.setPosition(j * (cellWidth), i * (cellHeight));
-                if(map->getTile(j, i) == ' ')
-                    rect.setFillColor(sf::Color::Yellow);
-                else
-                    rect.setFillColor(sf::Color::Blue);
-                window.draw(rect);
-            }
-        }
-    }
-
-    void Renderer::renderPlayerBall()
-    {
-        sf::CircleShape ball(5.0f);
-        ball.setOrigin(5.0f, 5.0f);
-        ball.setFillColor(sf::Color::Red);
-        ball.setPosition(gridToWindow(player->getPosition()));
-        window.draw(ball);
-    }
-
-    void Renderer::castRaysTopView()
-    {
-        // Conversion from math vector class to sfml 
-        sf::Vector2f playerPos = gridToWindow(player->getPosition());
-        player->normalizeAngle();
-        Math::Angle ang = player->getAngle();
-
-        ang -= fov / 2.0f;
-
-        for(int i = 0; i < nRays; ++i)
-        {
-            ang.normalize();
-
-            Math::Vector2f snappedPoint = Raycaster::castedRayHitPoint(player->getPosition(), ang, map);
-            sf::Vector2f snappedPointSFML = gridToWindow(snappedPoint);
-
-            // Draw line from player to hit point
-            drawLine(playerPos, snappedPointSFML, sf::Color::Black);
-        
-            ang += fov / (nRays - 1);
-        }
-    }
 
     // Draws a column of pixels
-    void Renderer::drawPixelColumn(int x, float dist/*, sf::Color color*/)
+    void Renderer::drawPixelColumn(float x, float dist, sf::Color color)
     {
         float height = ((float)screenHeight) / dist;
         sf::RectangleShape rect(sf::Vector2f(screenWidth/nRays, height));
-        rect.setFillColor(sf::Color(0, 255, 0, (dist > 1.0f) ? 255 / dist : 255));
+        rect.setFillColor(color);
         rect.setPosition(sf::Vector2f(x, (screenHeight - height) / 2));
         window.draw(rect);
     }
@@ -102,20 +26,32 @@ namespace Rendering
     // Draws columns of pixels taking into account the distance of the wall
     void Renderer::render3d()
     {
-        // Conversions from math vector class to sfml 
-        sf::Vector2f playerPos = gridToWindow(player->getPosition());
         player->normalizeAngle();
-        Math::Angle ang = player->getAngle();
 
-        ang -= fov / 2.0f;
-        float increment = fov / (nRays - 1);
-        
-        for(int i = 0; i < nRays; ++i, ang += increment)
+        Math::Vector2D<float> playerDir = Math::Vector2D<float>(std::cos(player->getAngle()), std::sin(player->getAngle()));
+        Math::Vector2D<float> cameraPlane = playerDir.getOrthogonal() * cameraPlaneLen;
+        Math::Vector2D<float> increment = cameraPlane * 2.0f / (nRays - 1);
+        Math::Vector2D<float> cameraPoint = player->getPosition() + playerDir + cameraPlane;
+
+        for(int i = 0; i < nRays; ++i, cameraPoint -= increment)
         {
-            ang.normalize();
+            Math::Vector2D<float> verticalHit = Raycaster::castVertically(player->getPosition(), cameraPoint, map) - player->getPosition();
+            Math::Vector2D<float> horizontalHit = Raycaster::castHorizontally(player->getPosition(), cameraPoint, map) - player->getPosition();
+            Math::Vector2D<float> hit;
 
-            float distance = Raycaster::castedRayDist(player->getPosition(), ang, map);            
-            drawPixelColumn(i * screenWidth / nRays, distance);
+            bool vertical = false;
+
+            if(verticalHit.lengthSquared() < horizontalHit.lengthSquared()) 
+            {
+                hit = verticalHit;
+                vertical = true;
+            }
+            else
+                hit = horizontalHit;
+
+            float distance = hit * playerDir;
+            sf::Color color(0, vertical ? 255 : 245, 0, 255 / (distance+1));            
+            drawPixelColumn(i * screenWidth / nRays, distance, color);
         } 
     }
 
@@ -133,6 +69,7 @@ namespace Rendering
         screenHeight = height;
         fov = fieldOfView;
         nRays = raysN;
+        cameraPlaneLen = std::tan(fieldOfView / 2.0f);
 
         window.create(sf::VideoMode(screenWidth, screenHeight), title);
         window.setFramerateLimit(60);
@@ -142,6 +79,8 @@ namespace Rendering
     {
         window.clear();
 
+
+        // debug();
         /* 3D CODE */
         render3d();
         

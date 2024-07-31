@@ -20,10 +20,10 @@ namespace Math
     }
 
     // Updates the player position and checks for wall collisions
-    void Physics::updatePosition(Math::Vector2f& position, float velocity, Angle angle, Game::Map* map, float radius)
+    void Physics::updatePosition(Math::Vector2D<float>& position, float velocity, float angle, Game::Map* map, float radius)
     {
-        float yPos = std::sin(angle.get()) * velocity * deltaTime + position.getY();
-        float xPos = std::cos(angle.get()) * velocity * deltaTime + position.getX();
+        float yPos = std::sin(angle) * velocity * deltaTime + position.getY();
+        float xPos = std::cos(angle) * velocity * deltaTime + position.getX();
 
         if(!checkCollision(xPos, position.getY(), map, radius))    // If position is valid
             position.setX(xPos);
@@ -43,7 +43,7 @@ namespace Math
     }
 
     // Updates the player view angle
-    void Physics::updateAngle(Angle& angle, float angularVelocity) 
+    void Physics::updateAngle(float& angle, float angularVelocity) 
     {
         angle += angularVelocity * deltaTime;
     }

@@ -6,9 +6,6 @@
 #include "Game/Map.hpp"
 #include "Game/Player.hpp"
 
-// Used to render topview
-#define CELL_SEPARATOR_THICKNESS 1    // Thickness of the grid separator lines
-
 namespace Rendering
 {
     // Singleton class.
@@ -31,6 +28,7 @@ namespace Rendering
 
         float fov;    // Field of view in radians
         int nRays;    // Number of rays casted from the player
+        float cameraPlaneLen;    // Length of the camera plane
     
     private:
         Renderer();
@@ -41,19 +39,10 @@ namespace Rendering
         Renderer& operator=(const Renderer&&) = delete;
 
         ~Renderer();
-
-    // Debugging and auxiliary methods
-        sf::Vector2f mathToSFML(const Math::Vector2f& vec) const;
-        sf::Vector2f gridToWindow(const Math::Vector2f& vec) const;
-        void drawLine(sf::Vector2f initialPos, sf::Vector2f endingPos, sf::Color color);
-        void renderTopView();    // Renders map in top view
-        void renderPlayerBall();    // Draws a ball in the player's position
-        void castRaysTopView();    // Draws rays from the player's position
         
     // Raycasting methods
-        void drawPixelColumn(int x, float dist/*, sf::Color color*/);
-        void render3d();    // Renders the 3D view
-        void render3dCameraPlane();
+        void drawPixelColumn(float x, float dist, sf::Color color);
+        void render3d();
 
     public:
         static Renderer& getInstance();

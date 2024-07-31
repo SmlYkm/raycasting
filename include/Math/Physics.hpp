@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Math/Vector2f.hpp"
-#include "Math/Angle.hpp"
+#include "Math/Vector2D.hpp"
 #include "Game/Map.hpp"
 
 #include <SFML/System/Clock.hpp>
@@ -19,8 +18,8 @@ namespace Math
 
         static bool checkCollision(float x, float y, Game::Map* map, float radius);
 
-        static void updatePosition(Math::Vector2f& position, float velocity, Math::Angle angle, Game::Map* map, float rad = 0.0f);
-        static void updateAngle(Angle& angle, float angularVelocity);
+        static void updatePosition(Math::Vector2D<float>& position, float velocity, float angle, Game::Map* map, float rad = 0.0f);
+        static void updateAngle(float& angle, float angularVelocity);
     
         static void updateDeltaTime();
     };
