@@ -9,7 +9,7 @@
                 "-g",
                 "${workspaceFolder}/src/*.cpp", 
                 "${workspaceFolder}/src/Math/*.cpp",
-                "${workspaceFolder}/src/Rendering/*.cpp",
+                "${workspaceFolder}/src/Draw/*.cpp",
                 "${workspaceFolder}/src/Game/*.cpp",
                 "-o",
                 "${workspaceFolder}/bin/raycaster",

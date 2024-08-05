@@ -100,7 +100,7 @@ namespace Game
     bool Map::isWall(int x, int y) const 
     {
         if(positionIsValid(x, y))
-            return tiles[y][x] == '#';
+            return tiles[y][x] != ' ';
         return true;    // If the position is invalid, consider it a wall
     }
 }

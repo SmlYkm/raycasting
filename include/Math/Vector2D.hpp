@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
+#include <ostream>
 
 namespace Math
 {
@@ -10,7 +12,12 @@ namespace Math
     class Vector2D
     {
     private:
-        // X and Y components of the two-dimensional vector
+        // X and Y components of the two-dimensional vector.
+        // Making them public would make the code easier to 
+        // work with, more readable and would also avoid 
+        // overhead (I think), but since it's considered 
+        // bad practice (for reasons I only accept and don't 
+        // really understand), I'm keeping them private :)
         T x, y;
     
     public:
@@ -24,41 +31,77 @@ namespace Math
 
     // Methods
 
-        T getX() const 
+        const T getX() const 
         { 
             return x; 
         }
-        T getY() const
+        const T getY() const
         {
             return y;
         }
         
-        void setX(T xx)
+        void setX(const T xx)
         {
             x = xx;
         }
-        void setY(T yy)
+        void setY(const T yy)
         {
             y = yy;
         }
 
-        void set(T xx, T yy)
+        void set(const T xx, const T yy)
         {
             x = xx;
             y = yy;
         }
 
-        Vector2D<T> getOrthogonal() const
+        void incX(const T xInc)
+        {
+            x += xInc;
+        }
+        void incY(const T yInc)
+        {
+            y += yInc;
+        }
+
+        void subX(const T xSub)
+        {
+            x -= xSub;
+        }
+        void subY(const T ySub)
+        {
+            y -= ySub;
+        }
+
+        void mulX(const T xMul)
+        {
+            x *= xMul;
+        }
+        void mulY(const T yMul)
+        {
+            y *= yMul;
+        }
+
+        void divX(const T xDiv)
+        {
+            x /= xDiv;
+        }
+        void divY(const T yDiv)
+        {
+            y /= yDiv;
+        }
+
+        const Vector2D<T> getOrthogonal() const
         {
             return Vector2D<T>(y, -x);
         }
 
-        T lengthSquared() const
+        const T lengthSquared() const
         {
             return x*x + y*y;
         }
 
-        T length() const
+        const T length() const
         {
             return sqrt(x*x + y*y);
         }
@@ -72,51 +115,51 @@ namespace Math
     
     // Operators for basic arithmetic
 
-        Vector2D<T> operator+(const Vector2D<T>& other) const
+        const Vector2D<T> operator+(const Vector2D<T>& other) const
         {
             return Vector2D<T>(x + other.x, y + other.y);
         }
         
-        Vector2D<T> operator-(const Vector2D<T>& other) const
+        const Vector2D<T> operator-(const Vector2D<T>& other) const
         {
             return Vector2D<T>(x - other.x, y - other.y);
         }
 
         // Multiplication by scalar
-        Vector2D<T> operator*(T scalar) const             
+        const Vector2D<T> operator*(T scalar) const             
         {
             return Vector2D<T>(x * scalar, y * scalar);
         }
 
         // Dot product
-        T operator*(const Vector2D<T>& other) const
+        const T operator*(const Vector2D<T>& other) const
         {
             return x * other.x + y * other.y;
         }
         
         // Division by scalar
-        Vector2D<T> operator/(T scalar) const
+        const Vector2D<T> operator/(T scalar) const
         {
             return Vector2D<T>(x / scalar, y / scalar);
         }
 
     // Operators for compound assignment
 
-        Vector2D<T>& operator=(const Vector2D<T>& other)
+        const Vector2D<T>& operator=(const Vector2D<T>& other)
         {
             x = other.x;
             y = other.y;
             return *this;
         }
 
-        Vector2D<T>& operator+=(const Vector2D<T>& other)
+        const Vector2D<T>& operator+=(const Vector2D<T>& other)
         {
             x += other.x;
             y += other.y;
             return *this;
         }
 
-        Vector2D<T>& operator-=(const Vector2D<T>& other)
+        const Vector2D<T>& operator-=(const Vector2D<T>& other)
         {
             x -= other.x;
             y -= other.y;
@@ -124,7 +167,7 @@ namespace Math
         }
 
         // Multiplication by scalar
-        Vector2D<T>& operator*=(T scalar)
+        const Vector2D<T>& operator*=(T scalar)
         {
             x *= scalar;
             y *= scalar;
@@ -132,21 +175,36 @@ namespace Math
         }
 
         // Division by scalar
-        Vector2D<T>& operator/=(T scalar)
+        const Vector2D<T>& operator/=(T scalar)
         {
             x /= scalar;
             y /= scalar;
             return *this;
         }
 
-        bool operator==(const Vector2D<T>& other) const
+        const bool operator==(const Vector2D<T>& other) const
         {
             return x == other.x && y == other.y;
         }
 
-        bool operator!=(const Vector2D<T>& other) const
+        const bool operator!=(const Vector2D<T>& other) const
         {
             return x != other.x || y != other.y;
         }
     };
+
+    template <class T>
+    
+    const Vector2D<T> operator*(T scalar, const Vector2D<T>& vec) 
+    {
+        return vec * scalar;
+    }
+
+    template <class T>
+    
+    std::ostream& operator<<(std::ostream& os, const Vector2D<T>& vec) 
+    {
+        os << "(" << vec.getX() << ", " << vec.getY() << ")";
+        return os;
+    }
 }

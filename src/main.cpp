@@ -1,18 +1,18 @@
 #include "Game/Map.hpp"
-#include "Rendering/Renderer.hpp"
+#include "Draw/Renderer.hpp"
 #include "Math/Physics.hpp"
 
 #define MAP_PATH "../levels/level3.json"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-#define WINDOW_NAME "Raycaster"
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
+#define WINDOW_NAME "raycasting"
 
 #define PLAYER_RADIUS 0.16f
 
 #define FPS 60
-#define FOV /*M_PI / 2.5f*/ 1.1519173063162575    // Field of view in radians
-#define N_RAYS 800    // Number of rays casted from the player
+#define FOV M_PI / 2.25f // 1.1519173063162575    // Field of view in radians
+#define N_RAYS 640    // Number of rays casted from the player
 
 int main()
 {

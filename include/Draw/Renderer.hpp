@@ -14,6 +14,7 @@ namespace Rendering
     {
     private:
         sf::RenderWindow window;
+        sf::Texture texture;
 
         // Both map, and player are aggregations, thus,
         // they ARE NOT deleted together with Renderer
@@ -42,6 +43,7 @@ namespace Rendering
         
     // Raycasting methods
         void drawPixelColumn(float x, float dist, sf::Color color);
+        void drawSpriteColumn(float x, float dist, int srcX, sf::Color& color, Math::Vector2D<float>& hit);
         void render3d();
 
     public:

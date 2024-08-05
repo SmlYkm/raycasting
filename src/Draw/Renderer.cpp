@@ -1,12 +1,20 @@
-#include "Rendering/Renderer.hpp"
-#include "Rendering/Raycaster.hpp"
+#include "Draw/Renderer.hpp"
+#include "Draw/Raycaster.hpp"
 
 #include <iostream>
+#include <cmath>
+
+#define SPRITE_PATH "../assets/wall.png"
 
 namespace Rendering
 {
     Renderer::Renderer()
-        : map(nullptr), screenWidth(0), screenHeight(0), fov(0.0f), nRays(0), cameraPlaneLen(0.0f)
+        : map(nullptr), 
+          texture(),
+          screenWidth(0), screenHeight(0), 
+          fov(0.0f), 
+          nRays(0), 
+          cameraPlaneLen(0.0f)
     {}
 
     Renderer::~Renderer()
@@ -21,6 +29,27 @@ namespace Rendering
         rect.setFillColor(color);
         rect.setPosition(sf::Vector2f(x, (screenHeight - height) / 2));
         window.draw(rect);
+    }
+
+    // src and dest as src and dest rectangles. Since the y and height values are 
+    // calculated here, only the src x and src widht are passed as parameters
+    void Renderer::drawSpriteColumn(float x, float dist, int srcX, sf::Color& color, Math::Vector2D<float>& hit)
+    {
+        // Calculate the height of the sprite column on the screen
+        float destHeight = ((float)screenHeight) / dist;
+
+        float destWidth = screenWidth / nRays;
+
+        sf::Sprite sprite(texture);
+        
+        sf::IntRect textureRect(srcX, 0, 1, texture.getSize().y);
+        sprite.setTextureRect(textureRect);
+        sprite.setScale(destWidth , destHeight / texture.getSize().y);
+        sprite.setPosition(x, (screenHeight - destHeight) / 2);
+
+        sprite.setColor(color);
+
+        window.draw(sprite);
     }
 
     // Draws columns of pixels taking into account the distance of the wall
@@ -40,6 +69,7 @@ namespace Rendering
             Math::Vector2D<float> hit;
 
             bool vertical = false;
+            float srcX = 0.0f;
 
             if(verticalHit.lengthSquared() < horizontalHit.lengthSquared()) 
             {
@@ -47,11 +77,25 @@ namespace Rendering
                 vertical = true;
             }
             else
+            {
                 hit = horizontalHit;
-
+            }
             float distance = hit * playerDir;
-            sf::Color color(0, vertical ? 255 : 245, 0, 255 / (distance+1));            
-            drawPixelColumn(i * screenWidth / nRays, distance, color);
+
+            hit += player->getPosition();
+                        
+            if(vertical)
+            {
+                sf::Color color(255, 255, 255, (distance < 1) ? 175 : 175 / distance);
+                srcX = (hit.getX() - floor(hit.getX())) * texture.getSize().x;
+                drawSpriteColumn(i * screenWidth / nRays, distance, (int) srcX, color, hit);
+            }
+            else
+            {
+                sf::Color color(255, 255, 255, (distance < 1) ? 255 : 255 / distance);
+                srcX = (hit.getY() - floor(hit.getY())) * texture.getSize().x;
+                drawSpriteColumn(i * screenWidth / nRays, distance, (int) srcX, color, hit);
+            }            
         } 
     }
 
@@ -70,6 +114,7 @@ namespace Rendering
         fov = fieldOfView;
         nRays = raysN;
         cameraPlaneLen = std::tan(fieldOfView / 2.0f);
+        texture.loadFromFile(SPRITE_PATH);
 
         window.create(sf::VideoMode(screenWidth, screenHeight), title);
         window.setFramerateLimit(60);
@@ -79,15 +124,7 @@ namespace Rendering
     {
         window.clear();
 
-
-        // debug();
-        /* 3D CODE */
         render3d();
-        
-        /* TOPVIEW CODE */
-        // renderTopView();
-        // castRaysTopView();
-        // renderPlayerBall();
 
         window.display();
     }

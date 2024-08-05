@@ -7,7 +7,7 @@ BIN_DIR := bin
 INCLUDE_DIR := include
 
 # Output
-TARGET := $(BIN_DIR)/raycaster
+TARGET := $(BIN_DIR)/raycasting
 
 # Source files
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp) \
