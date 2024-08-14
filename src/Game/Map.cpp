@@ -95,12 +95,11 @@ namespace Game
         return ' ';
     }
 
-    // Checks if the position is a wall, if the position is outside the
-    // boundaries of the map, it is considered a wall
+    // Checks if the position is a wall
     bool Map::isWall(int x, int y) const 
     {
         if(positionIsValid(x, y))
             return tiles[y][x] != ' ';
-        return true;    // If the position is invalid, consider it a wall
+        return true;    // If the position isn't invalid, consider it a wall
     }
 }

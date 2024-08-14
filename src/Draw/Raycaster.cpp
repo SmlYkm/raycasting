@@ -3,31 +3,54 @@
 
 namespace Rendering
 {
+    bool Raycaster::hitIsVertical(false);
+
     // Prolongs ray till it hits a wall or goes outside of the map
     Math::Vector2D<float> Raycaster::prolongRay(Math::Vector2D<float> currentPos, Math::Vector2D<float> delta, Game::Map* map)    
     {
-        // If the current position isn't a wall and isn't outside of the boudaries of the map
-        while(map->positionIsValid((int)currentPos.getX(), (int)currentPos.getY()) 
-              && !map->isWall((int)currentPos.getX(), (int)currentPos.getY()))
+        while(!map->isWall((int)currentPos.getX(), (int)currentPos.getY()))
             currentPos += delta;
         return currentPos;
     }
 
-    // Casts the ray snapping it horizontally(the name might be inverted)
-    // to the next grid till it hits a wall and returns the position of the hit,
-    Math::Vector2D<float> Raycaster::castHorizontally(Math::Vector2D<float> castingPos, Math::Vector2D<float> cameraPoint, Game::Map* map)
+    // Casts the ray snapping it vertically to the next grid till it hits a wall and returns the hit point
+    Math::Vector2D<float> Raycaster::castVertically(Math::Vector2D<float> castingPos, Math::Vector2D<float> cameraPoint, Game::Map* map)
     {
-        // Variables used to calculate the first iteration of the algorithm
-        float x = floor(castingPos.getX()), y;
-        float deltaY, deltaX;    // Increment values
+        float x, y = floor(castingPos.getY());
+        float deltaX, deltaY;
         float angularCoef = (cameraPoint.getY() - castingPos.getY()) / ((cameraPoint.getX() - castingPos.getX()));
 
-        if(cameraPoint.getX() > castingPos.getX())    // If looking right
+        if(cameraPoint.getY() > castingPos.getY())    // If facing upward
+        {
+            ++y;
+            deltaY = 1.0f;
+        }
+        else    // If facing downward
+        {
+            y -= FLOAT_EPSILON;
+            deltaY = -1.0f;
+        }
+
+        // Line equation used to find the x position in the first iteration
+        x = (y - castingPos.getY()) / angularCoef + castingPos.getX();
+        deltaX = deltaY / angularCoef;                                    
+
+        return prolongRay(Math::Vector2D<float>(x, y), Math::Vector2D<float>(deltaX, deltaY), map);
+    }
+
+    // Casts the ray snapping it vertically to the next grid till it hits a wall and returns the hit point
+    Math::Vector2D<float> Raycaster::castHorizontally(Math::Vector2D<float> castingPos, Math::Vector2D<float> cameraPoint, Game::Map* map)
+    {
+        float x = floor(castingPos.getX()), y;
+        float deltaX, deltaY;
+        float angularCoef = (cameraPoint.getY() - castingPos.getY()) / ((cameraPoint.getX() - castingPos.getX()));
+
+        if(cameraPoint.getX() > castingPos.getX())    // If facing right
         {
             ++x;
             deltaX = 1.0f;
         }
-        else    // If looking left
+        else    // If facing left
         {
             x -= FLOAT_EPSILON;
             deltaX = -1.0f;
@@ -40,31 +63,77 @@ namespace Rendering
         return prolongRay(Math::Vector2D<float>(x, y), Math::Vector2D<float>(deltaX, deltaY), map);
     }
 
-    // Casts the ray snapping it vertically(the name might be inverted)
-    // to the next grid till it hits a wall and returns the position of the hit,
-    Math::Vector2D<float> Raycaster::castVertically(Math::Vector2D<float> castingPos, Math::Vector2D<float> cameraPoint, Game::Map* map)
+    Math::Vector2D<float> Raycaster::castRay(const Math::Vector2D<float>& castingPos,const Math::Vector2D<float>& cameraPoint, Game::Map* map)
     {
-        // Variables used to calculate the first iteration of the algorithm
-        float y = floor(castingPos.getY()), x;
-        float deltaY, deltaX;    // Increment values
-        float angularCoef = (cameraPoint.getY() - castingPos.getY()) / ((cameraPoint.getX() - castingPos.getX()));
+        float slope = (cameraPoint.getY() - castingPos.getY()) / ((cameraPoint.getX() - castingPos.getX()));   
 
-        if(cameraPoint.getY() > castingPos.getY())    // If looking up
+        //
+        // Vertical
+        //
+
+        float verticalX, verticalY = floor(castingPos.getY()) + 1.0f;
+        float verticalDeltaX, verticalDeltaY = 1.0f;
+
+        if(cameraPoint.getY() < castingPos.getY())    // Facing downward
         {
-            ++y;
-            deltaY = 1.0f;
-        }
-        else    // If looking down
-        {
-            y -= FLOAT_EPSILON;
-            deltaY = -1.0f;
+            verticalY -= (FLOAT_EPSILON + 1.0f);
+            verticalDeltaY = -1.0f;
         }
 
         // Line equation used to find the x position in the first iteration
-        x = (y - castingPos.getY()) / angularCoef + castingPos.getX();    // this line and the following could be passed as function pointers,
-        deltaX = deltaY / angularCoef;                                    // so I could use the same function to cast horizontally and vertically
+        verticalX = (verticalY - castingPos.getY()) / slope + castingPos.getX();
+        verticalDeltaX = verticalDeltaY / slope;
 
-        // Increments x and y values by the delta values till the ray hits a wall
-        return prolongRay(Math::Vector2D<float>(x, y), Math::Vector2D<float>(deltaX, deltaY), map);
+        //
+        // Horizontal
+        //
+
+        float horizontalX = floor(castingPos.getX()) + 1.0f, horizontalY;
+        float horizontalDeltaX = 1.0f, horizontalDeltaY;
+
+        if(cameraPoint.getX() < castingPos.getX())    // If facing right
+        {
+            horizontalX -= (FLOAT_EPSILON + 1.0f);
+            horizontalDeltaX = -1.0f;
+        }
+    
+        // Line equation used to find the y position in the first iteration
+        horizontalY = (horizontalX - castingPos.getX())*slope + castingPos.getY();
+        horizontalDeltaY = horizontalDeltaX * slope;
+
+        //
+        // DDA
+        //
+
+        Math::Vector2D<float> horizontalDelta(horizontalDeltaX, horizontalDeltaY);
+        Math::Vector2D<float> verticalDelta(verticalDeltaX, verticalDeltaY);
+
+        Math::Vector2D<float> verticalPos(verticalX, verticalY);
+        Math::Vector2D<float> horizontalPos(horizontalX, horizontalY);
+
+        Math::Vector2D<float> hitPos;
+        
+        do
+        {
+            if((horizontalPos-castingPos) < (verticalPos-castingPos))
+            {
+                hitPos = horizontalPos;
+                horizontalPos += horizontalDelta;
+                hitIsVertical = false;
+            }
+            else
+            {
+                hitPos = verticalPos;
+                verticalPos += verticalDelta;
+                hitIsVertical = true;
+            }
+        } while(!map->isWall((int)hitPos.getX(), (int)hitPos.getY()));
+
+        return hitPos;
+    }
+
+    const bool Raycaster::hitWasVertical()
+    {
+        return hitIsVertical;
     }
 }

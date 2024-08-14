@@ -14,9 +14,8 @@
                 "-o",
                 "${workspaceFolder}/bin/raycaster",
                 "-I${workspaceFolder}/include", 
-                "-lsfml-graphics",
-                "-lsfml-window",
-                "-lsfml-system"
+                "-lSDL2",
+                "-lSDL2_image"
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -5,14 +5,14 @@
 
 namespace Math
 {
-    float Physics::deltaTime = 0.0f; // Definition and initialization of the static variable
+    Uint32 Physics::deltaTime = 0; 
 
-    sf::Clock Physics::clock;    // Definition of the static variable
+    Uint32 Physics::previousTime = 0;
 
-    // Handles wall collisions
+    Uint32 Physics::currentTime = 0;
+
     bool Physics::checkCollision(float x, float y, Game::Map* map, float radius)
     {
-        // isWall also checks boudaries, so buffer overflows don't occur
         return ((map->isWall((int)(x + radius), (int)(y + radius))) ||
                 (map->isWall((int)(x - radius), (int)(y + radius))) ||
                 (map->isWall((int)(x + radius), (int)(y - radius))) ||
@@ -22,36 +22,37 @@ namespace Math
     // Updates the player position and checks for wall collisions
     void Physics::updatePosition(Math::Vector2D<float>& position, float velocity, float angle, Game::Map* map, float radius)
     {
-        float yPos = std::sin(angle) * velocity * deltaTime + position.getY();
-        float xPos = std::cos(angle) * velocity * deltaTime + position.getX();
+        float yPos = std::sin(angle) * velocity * (float)deltaTime + position.getY();
+        float xPos = std::cos(angle) * velocity * (float)deltaTime + position.getX();
 
-        if(!checkCollision(xPos, position.getY(), map, radius))    // If position is valid
+        if(!checkCollision(xPos, position.getY(), map, radius)) 
             position.setX(xPos);
-        // If not, place it in the last valid position
-        else if(xPos > position.getX())    // If the player is moving right
+        else if(xPos > position.getX())    
             position.setX(ceil(position.getX()) - radius - FLOAT_EPSILON);
-        else
+        else    
             position.setX(floor(position.getX()) + radius + FLOAT_EPSILON);
         
-        if(!checkCollision(position.getX(), yPos, map, radius))    // If position is valid
+        if(!checkCollision(position.getX(), yPos, map, radius))    
             position.setY(yPos);
-        // If not, place it in the last valid position
-        else if(yPos > position.getY())    // If the player is moving down
+        else if(yPos > position.getY())   
             position.setY(ceil(position.getY()) - radius - FLOAT_EPSILON);
-        else
+        else  
             position.setY(floor(position.getY()) + radius + FLOAT_EPSILON);
     }
 
     // Updates the player view angle
     void Physics::updateAngle(float& angle, float angularVelocity) 
     {
-        angle += angularVelocity * deltaTime;
+        angle += angularVelocity * (float)deltaTime;
     }
 
     // Updates elapsed time between frames
-    void Physics::updateDeltaTime()
-    {
-        sf::Time elapsed = clock.restart();
-        deltaTime = elapsed.asMicroseconds();
+    const Uint32 Physics::updateDeltaTime()
+    {      
+        currentTime = SDL_GetTicks();
+        deltaTime = (currentTime - previousTime);
+        previousTime = currentTime;
+
+        return deltaTime;
     }
 }

@@ -1,6 +1,8 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
 #include <cmath>
 
 #include "Game/Map.hpp"
@@ -13,8 +15,9 @@ namespace Rendering
     class Renderer
     {
     private:
-        sf::RenderWindow window;
-        sf::Texture texture;
+        SDL_Window* window;
+        SDL_Renderer* renderer;
+        SDL_Texture* texture;
 
         // Both map, and player are aggregations, thus,
         // they ARE NOT deleted together with Renderer
@@ -27,10 +30,17 @@ namespace Rendering
         int screenWidth;
         int screenHeight;
 
+        int pixelColumnWidth;
+
+        Uint32 fps;
+        Uint32 frameDelay;
+
         float fov;    // Field of view in radians
         int nRays;    // Number of rays casted from the player
         float cameraPlaneLen;    // Length of the camera plane
-    
+
+        bool running;
+
     private:
         Renderer();
 
@@ -42,18 +52,22 @@ namespace Rendering
         ~Renderer();
         
     // Raycasting methods
-        void drawPixelColumn(float x, float dist, sf::Color color);
-        void drawSpriteColumn(float x, float dist, int srcX, sf::Color& color, Math::Vector2D<float>& hit);
+        void drawPixelColumn(float x, float dist);
+        void drawSpriteColumn(int x, float dist, int srcX/*, Math::Vector2D<float>& hit*/);
         void render3d();
 
     public:
         static Renderer& getInstance();
-        void init(Game::Map* mp, Game::Player* pl, 
-                  int width, int height, const char* title = " ", 
-                  float fieldOfView = M_PI / 2.0f, int raysN = 100);
+        void setMap(Game::Map* mp);
+        void setPlayer(Game::Player* pl);
+        void setFPSlimit(int limit = 60);
+        void initWindow(const int width, const int height, 
+                        const char* title = " ", 
+                        const float fieldOfView = (float)M_PI/2.0f, 
+                        const int raysN = 100);
+
         void render();
         void pollEvent();
-        bool isOpen() const;
-        void setFPSlimit(unsigned int fps);
+        const bool isRunning() const;
     };
 }

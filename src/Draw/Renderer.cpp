@@ -1,5 +1,6 @@
 #include "Draw/Renderer.hpp"
 #include "Draw/Raycaster.hpp"
+#include "Math/Physics.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -9,47 +10,56 @@
 namespace Rendering
 {
     Renderer::Renderer()
-        : map(nullptr), 
-          texture(),
-          screenWidth(0), screenHeight(0), 
-          fov(0.0f), 
-          nRays(0), 
-          cameraPlaneLen(0.0f)
-    {}
+        : window(nullptr),
+          renderer(nullptr),
+          texture(nullptr),
+          map(nullptr),
+          player(nullptr),
+          screenWidth(800),
+          screenHeight(600),
+          pixelColumnWidth(8),
+          fps(60),
+          frameDelay(16),
+          fov(0.0f),
+          nRays(100),
+          cameraPlaneLen(1.0f),
+          running(false)
+    {
+        if(SDL_Init(SDL_INIT_VIDEO) < 0)
+            std::cout << "failed to init sdl\n";
+        if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) 
+            std::cout << "failed to init png subsystem\n";
+    }
 
     Renderer::~Renderer()
-    {}
+    {
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
 
+        IMG_Quit();
+        SDL_Quit();
+    }
 
     // Draws a column of pixels
-    void Renderer::drawPixelColumn(float x, float dist, sf::Color color)
+    void Renderer::drawPixelColumn(float x, float dist)
     {
         float height = ((float)screenHeight) / dist;
-        sf::RectangleShape rect(sf::Vector2f(screenWidth/nRays, height));
-        rect.setFillColor(color);
-        rect.setPosition(sf::Vector2f(x, (screenHeight - height) / 2));
-        window.draw(rect);
+        SDL_Rect rect = {(int)x, (int)((screenHeight - height) / 2), screenWidth/nRays, (int)height};
+        SDL_RenderFillRect(renderer, &rect);
     }
 
     // src and dest as src and dest rectangles. Since the y and height values are 
     // calculated here, only the src x and src widht are passed as parameters
-    void Renderer::drawSpriteColumn(float x, float dist, int srcX, sf::Color& color, Math::Vector2D<float>& hit)
+    void Renderer::drawSpriteColumn(int x, float dist, int srcX)
     {
-        // Calculate the height of the sprite column on the screen
-        float destHeight = ((float)screenHeight) / dist;
+        int destHeight = (int)(((float)screenHeight) / dist);
+        SDL_Rect dest = {x, (screenHeight - destHeight) / 2, pixelColumnWidth, (int)destHeight};
+        SDL_Rect src = {srcX, 0, 1, 32};
 
-        float destWidth = screenWidth / nRays;
-
-        sf::Sprite sprite(texture);
-        
-        sf::IntRect textureRect(srcX, 0, 1, texture.getSize().y);
-        sprite.setTextureRect(textureRect);
-        sprite.setScale(destWidth , destHeight / texture.getSize().y);
-        sprite.setPosition(x, (screenHeight - destHeight) / 2);
-
-        sprite.setColor(color);
-
-        window.draw(sprite);
+        Uint8 colorMod = (Uint8) (255.0f/(dist+1.0f));
+        SDL_SetTextureColorMod(texture, colorMod, colorMod, colorMod);
+        SDL_RenderCopy(renderer, texture, &src, &dest);
     }
 
     // Draws columns of pixels taking into account the distance of the wall
@@ -60,42 +70,19 @@ namespace Rendering
         Math::Vector2D<float> playerDir = Math::Vector2D<float>(std::cos(player->getAngle()), std::sin(player->getAngle()));
         Math::Vector2D<float> cameraPlane = playerDir.getOrthogonal() * cameraPlaneLen;
         Math::Vector2D<float> increment = cameraPlane * 2.0f / (nRays - 1);
-        Math::Vector2D<float> cameraPoint = player->getPosition() + playerDir + cameraPlane;
+        Math::Vector2D<float> cameraPlanePoint = player->getPosition() + playerDir + cameraPlane;
 
-        for(int i = 0; i < nRays; ++i, cameraPoint -= increment)
+        for(int i = 0; i < nRays; ++i, cameraPlanePoint -= increment)
         {
-            Math::Vector2D<float> verticalHit = Raycaster::castVertically(player->getPosition(), cameraPoint, map) - player->getPosition();
-            Math::Vector2D<float> horizontalHit = Raycaster::castHorizontally(player->getPosition(), cameraPoint, map) - player->getPosition();
-            Math::Vector2D<float> hit;
+            Math::Vector2D<float> hit = Raycaster::cast(player->getPosition(), cameraPlanePoint, map);
 
-            bool vertical = false;
-            float srcX = 0.0f;
-
-            if(verticalHit.lengthSquared() < horizontalHit.lengthSquared()) 
-            {
-                hit = verticalHit;
-                vertical = true;
-            }
-            else
-            {
-                hit = horizontalHit;
-            }
-            float distance = hit * playerDir;
-
-            hit += player->getPosition();
+            float perpDist = (hit-player->getPosition()) * playerDir;
                         
-            if(vertical)
-            {
-                sf::Color color(255, 255, 255, (distance < 1) ? 175 : 175 / distance);
-                srcX = (hit.getX() - floor(hit.getX())) * texture.getSize().x;
-                drawSpriteColumn(i * screenWidth / nRays, distance, (int) srcX, color, hit);
-            }
-            else
-            {
-                sf::Color color(255, 255, 255, (distance < 1) ? 255 : 255 / distance);
-                srcX = (hit.getY() - floor(hit.getY())) * texture.getSize().x;
-                drawSpriteColumn(i * screenWidth / nRays, distance, (int) srcX, color, hit);
-            }            
+            int srcX = (hit.getY() - floor(hit.getY())) * 32;
+            if(Raycaster::isVertical())
+                srcX = (hit.getX() - floor(hit.getX())) * 32;
+            
+            drawSpriteColumn(i * pixelColumnWidth, perpDist, srcX);   
         } 
     }
 
@@ -105,47 +92,73 @@ namespace Rendering
         return instance;
     }
 
-    void Renderer::init(Game::Map* mp, Game::Player* pl, int width, int height, const char* title, float fieldOfView, int raysN)
+    void Renderer::setMap(Game::Map* mp)
     {
         map = mp;
+    }
+
+    void Renderer::setPlayer(Game::Player* pl)
+    {
         player = pl;
-        screenWidth = width;
+    }
+
+    void Renderer::setFPSlimit(int limit)
+    {
+        fps = limit;
+        frameDelay = 1000/fps;
+    }
+
+    void Renderer::initWindow(const int width, const int height, const char* title, const float fieldOfView, const int raysN)
+    {
         screenHeight = height;
+        screenWidth = width;
+
+        window = SDL_CreateWindow(title,
+                                  SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                  width, height, 
+                                  SDL_WINDOW_SHOWN);        
+        
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        
         fov = fieldOfView;
         nRays = raysN;
         cameraPlaneLen = std::tan(fieldOfView / 2.0f);
-        texture.loadFromFile(SPRITE_PATH);
+        pixelColumnWidth = screenWidth / nRays;
+        
+        running = true;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-        window.create(sf::VideoMode(screenWidth, screenHeight), title);
-        window.setFramerateLimit(60);
+        SDL_Surface* surface = IMG_Load(SPRITE_PATH);
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
     }
 
     void Renderer::render()
     {
-        window.clear();
+        SDL_RenderClear(renderer);
 
         render3d();
 
-        window.display();
+        SDL_RenderPresent(renderer);
+
+        Uint32 deltaTime = Math::Physics::updateDeltaTime();
+
+        if(deltaTime < frameDelay)
+            SDL_Delay(frameDelay - deltaTime);
     }
 
     void Renderer::pollEvent()
     {
-        sf::Event event;
-        while(window.pollEvent(event))
-            if(event.type == sf::Event::Closed)
-                window.close();
+        static SDL_Event event;
+        while (SDL_PollEvent(&event)) 
+            if (event.type == SDL_QUIT)
+                running = false;
         
         player->handleInput();
     }
 
-    bool Renderer::isOpen() const
+    const bool Renderer::isRunning() const 
     {
-        return window.isOpen();
-    }
-
-    void Renderer::setFPSlimit(unsigned int fps)
-    {
-        window.setFramerateLimit(fps);
+        return running;
     }
 }

@@ -8,7 +8,12 @@
 namespace Game
 {
     Player::Player(Math::Vector2D<float> pos, Game::Map* mp, float rad, float ang, float vel, float angVel)
-        : position(pos), map(mp), radius(rad), angle(ang), velocity(vel), angularVelocity(angVel)
+        : position(pos), 
+          map(mp), 
+          radius(rad), 
+          angle(ang), 
+          velocity(vel), 
+          angularVelocity(angVel)
     {}
 
     Player::~Player()
@@ -43,21 +48,20 @@ namespace Game
         angle = ang;
     }
 
-    // TODO: add strafing (or not)
-    void Player::handleInput()    // Keyboard input
+    void Player::handleInput()
     {
-        // Since more than one key can be pressed at the same time,
-        // we need to check each key separately
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        const Uint8* keyState = SDL_GetKeyboardState(nullptr);
+
+        if(keyState[SDL_SCANCODE_W])
             Math::Physics::updatePosition(position, velocity, angle, map, radius);
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        if(keyState[SDL_SCANCODE_S])
             Math::Physics::updatePosition(position, -velocity, angle, map, radius);
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        if(keyState[SDL_SCANCODE_A])
             Math::Physics::updateAngle(angle, -angularVelocity);
-
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        
+        if(keyState[SDL_SCANCODE_D])
             Math::Physics::updateAngle(angle, angularVelocity);
     }
 }

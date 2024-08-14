@@ -3,25 +3,21 @@
 #include <cmath>
 #include <iostream>
 #include <ostream>
+#include <type_traits>
 
 namespace Math
 {
-    template <class T>
+    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
 
     // Template class for two-dimensional vectors
     class Vector2D
     {
+    static_assert(std::is_arithmetic<T>::value, "Vector2D can only be instantiated with numeric types.");
+
     private:
-        // X and Y components of the two-dimensional vector.
-        // Making them public would make the code easier to 
-        // work with, more readable and would also avoid 
-        // overhead (I think), but since it's considered 
-        // bad practice (for reasons I only accept and don't 
-        // really understand), I'm keeping them private :)
         T x, y;
     
     public:
-        // The constructor uses float values as default parameters
         Vector2D(T xx = 0.0f, T yy = 0.0f) 
             : x(xx), y(yy) 
         {}
@@ -185,6 +181,26 @@ namespace Math
         const bool operator==(const Vector2D<T>& other) const
         {
             return x == other.x && y == other.y;
+        }
+
+        const bool operator<(const Vector2D<T>& other) const
+        {
+            return (lengthSquared() < other.lengthSquared());
+        }
+
+        const bool operator<=(const Vector2D<T>& other) const
+        {
+            return (lengthSquared() <= other.lengthSquared());
+        }
+
+        const bool operator>(const Vector2D<T>& other) const
+        {
+            return (lengthSquared() > other.lengthSquared());
+        }
+
+        const bool operator>=(const Vector2D<T>& other) const
+        {
+            return (lengthSquared() >= other.lengthSquared());
         }
 
         const bool operator!=(const Vector2D<T>& other) const
