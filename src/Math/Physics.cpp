@@ -3,16 +3,14 @@
 
 #include <iostream>
 
-namespace Math
-{
+namespace Math {
     Uint32 Physics::deltaTime = 0; 
 
     Uint32 Physics::previousTime = 0;
 
     Uint32 Physics::currentTime = 0;
 
-    bool Physics::checkCollision(float x, float y, Game::Map* map, float radius)
-    {
+    bool Physics::checkCollision(float x, float y, Game::Map* map, float radius) {
         return ((map->isWall((int)(x + radius), (int)(y + radius))) ||
                 (map->isWall((int)(x - radius), (int)(y + radius))) ||
                 (map->isWall((int)(x + radius), (int)(y - radius))) ||
@@ -20,8 +18,7 @@ namespace Math
     }
 
     // Updates the player position and checks for wall collisions
-    void Physics::updatePosition(Math::Vector2D<float>& position, float velocity, float angle, Game::Map* map, float radius)
-    {
+    void Physics::updatePosition(Math::Vector2D<float>& position, float velocity, float angle, Game::Map* map, float radius) {
         float yPos = std::sin(angle) * velocity * (float)deltaTime + position.getY();
         float xPos = std::cos(angle) * velocity * (float)deltaTime + position.getX();
 
@@ -41,14 +38,12 @@ namespace Math
     }
 
     // Updates the player view angle
-    void Physics::updateAngle(float& angle, float angularVelocity) 
-    {
+    void Physics::updateAngle(float& angle, float angularVelocity)  {
         angle += angularVelocity * (float)deltaTime;
     }
 
     // Updates elapsed time between frames
-    const Uint32 Physics::updateDeltaTime()
-    {      
+    const Uint32 Physics::updateDeltaTime() {      
         currentTime = SDL_GetTicks();
         deltaTime = (currentTime - previousTime);
         previousTime = currentTime;

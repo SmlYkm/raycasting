@@ -5,9 +5,13 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 
-namespace Game
-{
-    Player::Player(Math::Vector2D<float> pos, Game::Map* mp, float rad, float ang, float vel, float angVel)
+namespace Game {
+    Player::Player(const Math::Vector2D<float>& pos,
+                   Game::Map* mp, 
+                   const float rad,
+                   const float ang, 
+                   const float vel, 
+                   const float angVel)
         : position(pos), 
           map(mp), 
           radius(rad), 
@@ -19,18 +23,11 @@ namespace Game
     Player::~Player()
     {}
 
-    const Math::Vector2D<float>& Player::getPosition() const
-    {
-        return position;
-    }
+    const Math::Vector2D<float>& Player::getPosition() const { return position; }
 
-    void Player::setPosition(const Math::Vector2D<float>& pos)
-    {
-        position = pos;
-    }
+    void Player::setPosition(const Math::Vector2D<float>& pos) { position = pos; }
 
-    void Player::normalizeAngle()
-    {
+    void Player::normalizeAngle() {
         while(angle < 0.0f)
             angle += TWO_PI;
         while(angle >= TWO_PI)
@@ -38,18 +35,11 @@ namespace Game
     }
 
 
-    const float Player::getAngle() const
-    {
-        return angle;
-    }
+    const float Player::getAngle() const { return angle; }
 
-    void Player::setAngle(float ang)
-    {
-        angle = ang;
-    }
+    void Player::setAngle(float ang) { angle = ang; }
 
-    void Player::handleInput()
-    {
+    void Player::handleInput() {
         const Uint8* keyState = SDL_GetKeyboardState(nullptr);
 
         if(keyState[SDL_SCANCODE_W])

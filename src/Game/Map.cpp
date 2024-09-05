@@ -5,13 +5,10 @@
 #include <fstream>
 #include <stdexcept>
 
-namespace Game
-{
+namespace Game {
     // Deallocates the map matrix
-    void Map::destroyTiles()
-    {
-        if(tiles)    // Deallocates allocated memory for the matrix
-        {
+    void Map::destroyTiles() {
+        if(tiles) {
             for(int i = 0; i < height; i++)
                 delete[] tiles[i];
 
@@ -23,8 +20,7 @@ namespace Game
     }
 
     // Loads map from a JSON file, deleting the previous map if it exists
-    void Map::load(const char* filePath)
-    {
+    void Map::load(const char* filePath) {
         destroyTiles();
 
         std::ifstream file(filePath);
@@ -39,11 +35,9 @@ namespace Game
         width = jsonTiles.empty() ? 0 : jsonTiles[0].size();
 
         tiles = new char*[height];
-        for(int i = 0; i < height; i++)
-        {
+        for(int i = 0; i < height; i++) {
             tiles[i] = new char[width];
-            for(int j = 0; j < width; j++)
-            {
+            for(int j = 0; j < width; j++) {
                 // Assuming each tile is represented as a single character string in JSON
                 std::string tileStr = jsonTiles[i][j];
                 if (!tileStr.empty())
@@ -52,54 +46,40 @@ namespace Game
                     tiles[i][j] = ' '; // Default to space if empty or not found
             }
         }
-
-        // File is automatically closed when the ifstream object is destroyed
     }
 
-    // Constructor that loads the map from a JSON file
     Map::Map(const char* filePath)
-        : height(0), width(0), tiles(nullptr)
+        : height(0), 
+          width(0), 
+          tiles(nullptr)
     {
-        load(filePath);
+        if(filePath)
+            load(filePath);
     }
 
-    Map::Map() 
-        : height(0), width(0), tiles(nullptr) 
-    {}
-
-    Map::~Map()
-    {
-        destroyTiles();
+    Map::~Map() { 
+        destroyTiles(); 
     }
 
-    int Map::getHeight() const 
-    { 
-        return height; 
-    }
+    const int Map::getHeight() const { return height; }
 
-    int Map::getWidth() const 
-    { 
-        return width; 
-    }
+    const int Map::getWidth() const { return width; }
 
     // Checks if the position is within the boundaries of the map
-    bool Map::positionIsValid(int x, int y) const 
-    {
+    const bool Map::positionIsValid(const int x, const int y) const {
         return x >= 0 && x < width && y >= 0 && y < height && tiles; 
     }
 
-    char Map::getTile(int x, int y) const 
-    {
+    const char Map::getTile(const int x, const int y) const {
         if(positionIsValid(x, y))
             return tiles[y][x]; 
         return ' ';
     }
 
-    // Checks if the position is a wall
-    bool Map::isWall(int x, int y) const 
-    {
+    // Checks if the position is a wall, if the position isn't invalid, it's considered a wall
+    const bool Map::isWall(const int x, const int y) const {
         if(positionIsValid(x, y))
             return tiles[y][x] != ' ';
-        return true;    // If the position isn't invalid, consider it a wall
+        return true;
     }
 }

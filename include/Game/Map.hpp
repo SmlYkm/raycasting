@@ -1,9 +1,7 @@
 #pragma once 
 
-namespace Game
-{
-    class Map
-    {
+namespace Game {
+    class Map {
     private:
         int height;
         int width;
@@ -14,14 +12,13 @@ namespace Game
         
     public:
         void load(const char* filePath);
-        Map(const char* filePath);
-        Map();
+        Map(const char* filePath = nullptr);
         ~Map();
 
-        int getHeight() const;
-        int getWidth() const;
-        bool positionIsValid(int x, int y) const;
-        char getTile(int x, int y) const;
-        bool isWall(int x, int y) const;
+        const int getHeight() const;
+        const int getWidth() const;
+        const bool positionIsValid(const int x, const int y) const;
+        const char getTile(const int x, const int y) const;
+        const bool isWall(const int x, const int y) const;
     };
 }

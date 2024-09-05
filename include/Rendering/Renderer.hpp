@@ -4,12 +4,12 @@
 #include <SDL2/SDL_image.h>
 
 #include <cmath>
+#include <vector>
 
 #include "Game/Map.hpp"
 #include "Game/Player.hpp"
 
-namespace Rendering
-{
+namespace Rendering {
     // Singleton class.
     // As defaut, the FPS is limited to 60 in the init function.
     class Renderer
@@ -19,8 +19,6 @@ namespace Rendering
         SDL_Renderer* renderer;
         SDL_Texture* texture;
 
-        // Both map, and player are aggregations, thus,
-        // they ARE NOT deleted together with Renderer
         Game::Map* map; 
         Game::Player* player; 
         
@@ -30,7 +28,7 @@ namespace Rendering
         int screenWidth;
         int screenHeight;
 
-        int pixelColumnWidth;
+        float pixelColumnWidth;
 
         Uint32 fps;
         Uint32 frameDelay;
@@ -53,7 +51,8 @@ namespace Rendering
         
     // Raycasting methods
         void drawPixelColumn(float x, float dist);
-        void drawSpriteColumn(int x, float dist, int srcX/*, Math::Vector2D<float>& hit*/);
+        void drawSpriteColumn(float x, float dist, int srcX);
+        void drawSpriteColumnBatch(const std::vector<SDL_FRect>& destRects, const std::vector<int>& srcXs, float dist);
         void render3d();
 
     public:

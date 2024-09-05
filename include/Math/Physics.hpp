@@ -5,10 +5,8 @@
 
 #include <SDL2/SDL.h>
 
-namespace Math
-{
-    class Physics
-    {
+namespace Math {
+    class Physics {
     private:
         static Uint32 deltaTime;    // Time between frames
         static Uint32 previousTime;    // Used to calculate the time between frames

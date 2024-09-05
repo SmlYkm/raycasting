@@ -1,14 +1,13 @@
-#include "Draw/Renderer.hpp"
-#include "Draw/Raycaster.hpp"
+#include "Rendering/Renderer.hpp"
+#include "Rendering/Raycaster.hpp"
 #include "Math/Physics.hpp"
 
 #include <iostream>
 #include <cmath>
 
-#define SPRITE_PATH "../assets/wall.png"
+#define SPRITE_PATH "../assets/brickWall.png"
 
-namespace Rendering
-{
+namespace Rendering {
     Renderer::Renderer()
         : window(nullptr),
           renderer(nullptr),
@@ -17,7 +16,7 @@ namespace Rendering
           player(nullptr),
           screenWidth(800),
           screenHeight(600),
-          pixelColumnWidth(8),
+          pixelColumnWidth(8.0f),
           fps(60),
           frameDelay(16),
           fov(0.0f),
@@ -31,8 +30,7 @@ namespace Rendering
             std::cout << "failed to init png subsystem\n";
     }
 
-    Renderer::~Renderer()
-    {
+    Renderer::~Renderer() {
         SDL_DestroyTexture(texture);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -42,29 +40,26 @@ namespace Rendering
     }
 
     // Draws a column of pixels
-    void Renderer::drawPixelColumn(float x, float dist)
-    {
+    void Renderer::drawPixelColumn(float x, float dist) {
         float height = ((float)screenHeight) / dist;
         SDL_Rect rect = {(int)x, (int)((screenHeight - height) / 2), screenWidth/nRays, (int)height};
         SDL_RenderFillRect(renderer, &rect);
     }
 
     // src and dest as src and dest rectangles. Since the y and height values are 
-    // calculated here, only the src x and src widht are passed as parameters
-    void Renderer::drawSpriteColumn(int x, float dist, int srcX)
-    {
-        int destHeight = (int)(((float)screenHeight) / dist);
-        SDL_Rect dest = {x, (screenHeight - destHeight) / 2, pixelColumnWidth, (int)destHeight};
-        SDL_Rect src = {srcX, 0, 1, 32};
+    // calculated here, only the src x and src width are passed as parameters
+    void Renderer::drawSpriteColumn(float x, float dist, int srcX) {
+        float destHeight = ((float)screenHeight) / dist;
+        SDL_FRect dest = {x, (float)(screenHeight - destHeight) / 2.0f, pixelColumnWidth, destHeight};
+        SDL_Rect src = {srcX, 0, 1, 64};
 
         Uint8 colorMod = (Uint8) (255.0f/(dist+1.0f));
         SDL_SetTextureColorMod(texture, colorMod, colorMod, colorMod);
-        SDL_RenderCopy(renderer, texture, &src, &dest);
+        SDL_RenderCopyF(renderer, texture, &src, &dest);
     }
 
     // Draws columns of pixels taking into account the distance of the wall
-    void Renderer::render3d()
-    {
+    void Renderer::render3d() {
         player->normalizeAngle();
 
         Math::Vector2D<float> playerDir = Math::Vector2D<float>(std::cos(player->getAngle()), std::sin(player->getAngle()));
@@ -72,35 +67,27 @@ namespace Rendering
         Math::Vector2D<float> increment = cameraPlane * 2.0f / (nRays - 1);
         Math::Vector2D<float> cameraPlanePoint = player->getPosition() + playerDir + cameraPlane;
 
-        for(int i = 0; i < nRays; ++i, cameraPlanePoint -= increment)
-        {
-            Math::Vector2D<float> hit = Raycaster::cast(player->getPosition(), cameraPlanePoint, map);
+        for(int i = 0; i < nRays; ++i, cameraPlanePoint -= increment) {
+            Math::Vector2D<float> hit = Raycaster::castRay(player->getPosition(), cameraPlanePoint, map);
 
             float perpDist = (hit-player->getPosition()) * playerDir;
                         
-            int srcX = (hit.getY() - floor(hit.getY())) * 32;
-            if(Raycaster::isVertical())
-                srcX = (hit.getX() - floor(hit.getX())) * 32;
+            int srcX = (hit.getY() - floor(hit.getY())) * 64;
+            if(Raycaster::hitWasVertical())
+                srcX = (hit.getX() - floor(hit.getX())) * 64;
             
             drawSpriteColumn(i * pixelColumnWidth, perpDist, srcX);   
         } 
     }
 
-    Renderer& Renderer::getInstance()
-    {
+    Renderer& Renderer::getInstance() {
         static Renderer instance;
         return instance;
     }
 
-    void Renderer::setMap(Game::Map* mp)
-    {
-        map = mp;
-    }
+    void Renderer::setMap(Game::Map* mp) { map = mp; }
 
-    void Renderer::setPlayer(Game::Player* pl)
-    {
-        player = pl;
-    }
+    void Renderer::setPlayer(Game::Player* pl) { player = pl; }
 
     void Renderer::setFPSlimit(int limit)
     {
@@ -108,8 +95,7 @@ namespace Rendering
         frameDelay = 1000/fps;
     }
 
-    void Renderer::initWindow(const int width, const int height, const char* title, const float fieldOfView, const int raysN)
-    {
+    void Renderer::initWindow(const int width, const int height, const char* title, const float fieldOfView, const int raysN) {
         screenHeight = height;
         screenWidth = width;
 
@@ -123,7 +109,7 @@ namespace Rendering
         fov = fieldOfView;
         nRays = raysN;
         cameraPlaneLen = std::tan(fieldOfView / 2.0f);
-        pixelColumnWidth = screenWidth / nRays;
+        pixelColumnWidth = (float)screenWidth / (float)nRays;
         
         running = true;
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -133,8 +119,7 @@ namespace Rendering
         SDL_FreeSurface(surface);
     }
 
-    void Renderer::render()
-    {
+    void Renderer::render() {
         SDL_RenderClear(renderer);
 
         render3d();
@@ -147,8 +132,7 @@ namespace Rendering
             SDL_Delay(frameDelay - deltaTime);
     }
 
-    void Renderer::pollEvent()
-    {
+    void Renderer::pollEvent() {
         static SDL_Event event;
         while (SDL_PollEvent(&event)) 
             if (event.type == SDL_QUIT)
@@ -157,8 +141,5 @@ namespace Rendering
         player->handleInput();
     }
 
-    const bool Renderer::isRunning() const 
-    {
-        return running;
-    }
+    const bool Renderer::isRunning() const { return running; }
 }

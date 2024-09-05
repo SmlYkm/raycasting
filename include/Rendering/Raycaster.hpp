@@ -3,11 +3,9 @@
 #include "Game/Player.hpp"
 #include "Game/Map.hpp"
 
-namespace Rendering
-{
+namespace Rendering {
     // Utility class for raycasting functions
-    class Raycaster
-    {
+    class Raycaster {
     private:
         static bool hitIsVertical;    // True if the hit is vertical and false if not
 
