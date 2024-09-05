@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 namespace Game {
-    // Deallocates the map matrix
+    // Deallocates tiles matrix
     void Map::destroyTiles() {
         if(tiles) {
             for(int i = 0; i < height; i++)

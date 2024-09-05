@@ -12,8 +12,7 @@
 namespace Rendering {
     // Singleton class.
     // As defaut, the FPS is limited to 60 in the init function.
-    class Renderer
-    {
+    class Renderer {
     private:
         SDL_Window* window;
         SDL_Renderer* renderer;

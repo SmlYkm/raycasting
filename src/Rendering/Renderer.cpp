@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cmath>
 
-#define SPRITE_PATH "../assets/brickWall.png"
+#define SPRITE_PATH "../assets/wall.png"
 
 namespace Rendering {
     Renderer::Renderer()
@@ -39,15 +39,12 @@ namespace Rendering {
         SDL_Quit();
     }
 
-    // Draws a column of pixels
     void Renderer::drawPixelColumn(float x, float dist) {
         float height = ((float)screenHeight) / dist;
         SDL_Rect rect = {(int)x, (int)((screenHeight - height) / 2), screenWidth/nRays, (int)height};
         SDL_RenderFillRect(renderer, &rect);
     }
 
-    // src and dest as src and dest rectangles. Since the y and height values are 
-    // calculated here, only the src x and src width are passed as parameters
     void Renderer::drawSpriteColumn(float x, float dist, int srcX) {
         float destHeight = ((float)screenHeight) / dist;
         SDL_FRect dest = {x, (float)(screenHeight - destHeight) / 2.0f, pixelColumnWidth, destHeight};
@@ -89,8 +86,7 @@ namespace Rendering {
 
     void Renderer::setPlayer(Game::Player* pl) { player = pl; }
 
-    void Renderer::setFPSlimit(int limit)
-    {
+    void Renderer::setFPSlimit(int limit) {
         fps = limit;
         frameDelay = 1000/fps;
     }

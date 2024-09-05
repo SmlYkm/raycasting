@@ -12,7 +12,7 @@
                 "${workspaceFolder}/src/Rendering/*.cpp",
                 "${workspaceFolder}/src/Game/*.cpp",
                 "-o",
-                "${workspaceFolder}/bin/raycaster",
+                "${workspaceFolder}/bin/raycasting",
                 "-I${workspaceFolder}/include", 
                 "-lSDL2",
                 "-lSDL2_image"
