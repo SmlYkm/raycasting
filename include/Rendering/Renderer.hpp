@@ -4,7 +4,6 @@
 #include <SDL2/SDL_image.h>
 
 #include <cmath>
-#include <vector>
 
 #include "Game/Map.hpp"
 #include "Game/Player.hpp"
@@ -47,7 +46,6 @@ namespace Rendering {
     // Raycasting related methods
         void drawPixelColumn(float x, float dist);
         void drawSpriteColumn(float x, float dist, int srcX);
-        void drawSpriteColumnBatch(const std::vector<SDL_FRect>& destRects, const std::vector<int>& srcXs, float dist);
         void render3d();
 
     public:
