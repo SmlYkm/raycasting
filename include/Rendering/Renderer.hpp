@@ -10,7 +10,6 @@
 #include "Game/Player.hpp"
 
 namespace Rendering {
-    // Singleton class.
     // As defaut, the FPS is limited to 60 in the init function.
     class Renderer {
     private:
@@ -21,9 +20,6 @@ namespace Rendering {
         Game::Map* map; 
         Game::Player* player; 
         
-        // Screen dimensions.
-        // Since the calculations envolving them are simple,
-        // using a Math::Vector2f is not necessary.
         int screenWidth;
         int screenHeight;
 
@@ -34,7 +30,7 @@ namespace Rendering {
 
         float fov;    // Field of view in radians
         int nRays;    // Number of rays casted from the player
-        float cameraPlaneLen;    // Length of the camera plane
+        float cameraPlaneLen;
 
         bool running;
 
@@ -48,7 +44,7 @@ namespace Rendering {
 
         ~Renderer();
         
-    // Raycasting methods
+    // Raycasting related methods
         void drawPixelColumn(float x, float dist);
         void drawSpriteColumn(float x, float dist, int srcX);
         void drawSpriteColumnBatch(const std::vector<SDL_FRect>& destRects, const std::vector<int>& srcXs, float dist);
